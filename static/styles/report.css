@@ -1,0 +1,278 @@
+/* ==========================================================================
+   GEMRSLIZE Report Synthesis Agent — PDF Stylesheet
+   Professional typography, clean layout, print-optimized
+   ========================================================================== */
+
+/* --- CSS Custom Properties --- */
+:root {
+    --primary-color: #1A56DB;
+    --text-color: #1F2937;
+    --text-light: #6B7280;
+    --bg-light: #F9FAFB;
+    --border-color: #E5E7EB;
+    --accent-bg: #EFF6FF;
+    --font-sans: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+/* --- Base Reset --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: 11pt;
+    line-height: 1.7;
+    color: var(--text-color);
+    background: #fff;
+    padding: 0;
+    margin: 0;
+}
+
+/* --- Page Layout (print) --- */
+@page {
+    size: A4;
+    margin: 2cm 2.5cm;
+
+    @bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-size: 9pt;
+        color: var(--text-light);
+    }
+}
+
+/* --- Header --- */
+.report-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.logo-container {
+    flex-shrink: 0;
+}
+
+.logo {
+    max-width: 100px;
+    max-height: 60px;
+    object-fit: contain;
+}
+
+.report-title {
+    font-size: 28pt;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+
+.company-name {
+    font-size: 14pt;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 2px;
+}
+
+.user-query {
+    font-size: 10pt;
+    color: var(--text-light);
+    margin-bottom: 2px;
+}
+
+.report-meta {
+    font-size: 9pt;
+    color: var(--text-light);
+}
+
+/* --- Divider --- */
+.divider {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 20px 0;
+}
+
+/* --- Table of Contents --- */
+.toc {
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 16px 24px;
+    margin-bottom: 32px;
+    page-break-after: always;
+}
+
+.toc h2 {
+    font-size: 14pt;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.toc ul {
+    list-style: none;
+    padding: 0;
+}
+
+.toc li {
+    padding: 4px 0;
+    border-bottom: 1px dotted var(--border-color);
+}
+
+.toc li:last-child {
+    border-bottom: none;
+}
+
+.toc a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 11pt;
+}
+
+.toc a:hover {
+    color: var(--primary-color);
+}
+
+/* --- Sections --- */
+.report-section {
+    margin-bottom: 32px;
+    page-break-inside: avoid;
+}
+
+.report-section h2 {
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--primary-color);
+    page-break-after: avoid;
+}
+
+.section-content {
+    font-size: 11pt;
+    line-height: 1.8;
+    text-align: justify;
+}
+
+.section-content p,
+.section-content br + br {
+    margin-bottom: 12px;
+}
+
+/* --- Executive Summary Box --- */
+.executive-summary .summary-box {
+    background: var(--accent-bg);
+    border-left: 4px solid var(--primary-color);
+    padding: 18px 24px;
+    border-radius: 0 6px 6px 0;
+    font-size: 11.5pt;
+    line-height: 1.8;
+}
+
+/* --- Tables --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 9.5pt;
+}
+
+thead {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+th {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+tbody tr:nth-child(even) {
+    background: var(--bg-light);
+}
+
+/* --- Charts --- */
+.charts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+}
+
+.chart-container {
+    flex: 0 1 48%;
+    text-align: center;
+    page-break-inside: avoid;
+}
+
+.chart-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.chart-caption {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-top: 6px;
+}
+
+.chart-description {
+    font-size: 9pt;
+    color: var(--text-light);
+    margin-top: 2px;
+}
+
+/* --- Footer --- */
+.report-footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 9pt;
+    color: var(--text-light);
+}
+
+.report-footer .disclaimer {
+    margin-top: 4px;
+    font-style: italic;
+    font-size: 8pt;
+}
+
+/* --- Print Utilities --- */
+@media print {
+    body {
+        padding: 0;
+    }
+
+    .report-header {
+        page-break-after: avoid;
+    }
+
+    .report-section {
+        page-break-before: auto;
+        page-break-inside: avoid;
+    }
+
+    a {
+        color: var(--text-color);
+        text-decoration: none;
+    }
+}
