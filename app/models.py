@@ -106,4 +106,5 @@ class HealthResponse(BaseModel):
     service: str = "report-synthesis-agent"
     version: str = "1.0.0"
     llm_provider: str = ""
+    llm_model: str = ""
     storage_type: str = ""

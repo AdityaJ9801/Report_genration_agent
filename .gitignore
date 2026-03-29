@@ -19,7 +19,10 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
-
+.env
+.env.free
+.env.paid
+.env.local
 # Virtual Environment
 venv/
 ENV/

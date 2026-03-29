@@ -43,6 +43,10 @@ class LLMClient:
                 return await self._generate_groq(
                     prompt, system_prompt, max_tokens, temperature
                 )
+            elif self.provider == "azure_openai":
+                return await self._generate_azure_openai(
+                    prompt, system_prompt, max_tokens, temperature
+                )
             else:
                 raise ValueError(f"Unsupported LLM provider: {self.provider}")
         except Exception as e:
@@ -131,6 +135,32 @@ class LLMClient:
         client = AsyncGroq(api_key=settings.GROQ_API_KEY)
         response = await client.chat.completions.create(
             model=settings.GROQ_MODEL,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        return response.choices[0].message.content
+
+    async def _generate_azure_openai(
+        self,
+        prompt: str,
+        system_prompt: str,
+        max_tokens: int,
+        temperature: float,
+    ) -> str:
+        """Generate text using Azure OpenAI."""
+        from openai import AsyncAzureOpenAI
+
+        client = AsyncAzureOpenAI(
+            api_key=settings.AZURE_OPENAI_API_KEY,
+            api_version=settings.AZURE_OPENAI_API_VERSION,
+            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT
+        )
+        response = await client.chat.completions.create(
+            model=settings.AZURE_OPENAI_DEPLOYMENT_NAME,
             max_tokens=max_tokens,
             temperature=temperature,
             messages=[

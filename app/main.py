@@ -156,8 +156,20 @@ async def _export_report(
 @app.get("/health", response_model=HealthResponse, tags=["system"])
 async def health_check():
     """Service health check."""
+    provider = str(getattr(settings, "LLM_PROVIDER", "unknown"))
+    model = ""
+    if provider == "azure_openai":
+        model = getattr(settings, "AZURE_OPENAI_DEPLOYMENT_NAME", "")
+    elif provider == "groq":
+        model = getattr(settings, "GROQ_MODEL", "")
+    elif provider == "openai":
+        model = "gpt-4o"
+    elif provider == "ollama":
+        model = getattr(settings, "OLLAMA_MODEL", "")
+
     return HealthResponse(
-        llm_provider=settings.LLM_PROVIDER,
+        llm_provider=provider,
+        llm_model=model,
         storage_type=settings.STORAGE_TYPE,
     )
 
@@ -286,3 +298,66 @@ async def get_report(report_id: str):
         download_url=metadata.download_url,
         content_base64=metadata.content_base64,
     )
+
+
+@app.post("/run", tags=["system"])
+async def run_task(payload: dict):
+    """
+    Orchestrator pipeline integration endpoint.
+    Aggregates upstream agent outputs from `_context` into an AgentOutputBundle
+    and generates the final report automatically.
+    """
+    task_description = payload.get("task_description") or payload.get("query") or "Auto-generated Synthesis"
+    context = payload.get("_context", {})
+    
+    context_summary = None
+    sql_results = []
+    charts = []
+    ml_results = None
+    nlp_insights = None
+    
+    # Intelligently map outputs from previous steps based on their unique attributes
+    for dep_id, dep_data in context.items():
+        if not isinstance(dep_data, dict):
+            continue
+            
+        # Context Agent: Usually contains "source_id" and "columns"
+        if "source_id" in dep_data and "columns" in dep_data and "metadata" in dep_data:
+            context_summary = dep_data
+            
+        # SQL Agent: Contains "sql_generated"
+        elif "sql_generated" in dep_data and "data_preview" in dep_data:
+            sql_results.append(dep_data)
+            
+        # Viz Agent: Contains "chart_type"
+        elif "chart_type" in dep_data and ("spec" in dep_data or "html" in dep_data or "png_base64" in dep_data):
+            charts.append(dep_data)
+            
+        # ML Agent: Contains metrics or model_type
+        elif "model_type" in dep_data and ("metrics" in dep_data or "predictions" in dep_data):
+            ml_results = dep_data
+            
+        # NLP Agent: Contains sentiment or entities
+        elif "sentiment" in dep_data or "entities" in dep_data:
+            nlp_insights = dep_data
+            
+    bundle = AgentOutputBundle(
+        context_summary=context_summary,
+        sql_results=sql_results if sql_results else None,
+        charts=charts if charts else None,
+        ml_results=ml_results,
+        nlp_insights=nlp_insights,
+        user_query=task_description
+    )
+    
+    req = ReportRequest(
+        bundle=bundle,
+        report_style="executive",
+        export_format="json",
+        include_charts=True
+    )
+    
+    # Delegate to the standard report generator
+    result = await generate_report(req)
+    # The JSON exporter returns a strongly typed model, convert it for the Orchestrator
+    return result.model_dump()

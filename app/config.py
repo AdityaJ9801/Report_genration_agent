@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """Report Synthesis Agent configuration."""
 
     # --- LLM Provider ---
-    LLM_PROVIDER: Literal["ollama", "claude", "openai", "groq"] = "ollama"
+    LLM_PROVIDER: Literal["ollama", "claude", "openai", "groq", "azure_openai"] = "azure_openai"
 
     # Ollama
     OLLAMA_BASE_URL: str = "http://ollama:11434"
@@ -27,7 +27,13 @@ class Settings(BaseSettings):
 
     # Groq
     GROQ_API_KEY: Optional[str] = None
-    GROQ_MODEL: str = "llama-3.1-70b-versatile"
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    
+    # Azure OpenAI
+    AZURE_OPENAI_API_KEY: Optional[str] = None
+    AZURE_OPENAI_ENDPOINT: str = ""
+    AZURE_OPENAI_DEPLOYMENT_NAME: str = ""
+    AZURE_OPENAI_API_VERSION: str = "2024-02-15-preview"
 
     # --- Storage ---
     STORAGE_TYPE: Literal["local", "s3"] = "local"
@@ -53,7 +59,7 @@ class Settings(BaseSettings):
     STATIC_DIR: str = "static"
 
     model_config = {
-        "env_file": ".env",
+        "env_file": ".env.paid",
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
         "extra": "ignore",
