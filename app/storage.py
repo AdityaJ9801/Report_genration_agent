@@ -86,8 +86,37 @@ class S3Storage(StorageBackend):
         }
 
 
+class AzureBlobStorage(StorageBackend):
+    """Upload files to Azure Blob Storage."""
+
+    def __init__(self):
+        from azure.storage.blob import BlobServiceClient
+        self.blob_service_client = BlobServiceClient.from_connection_string(
+            settings.AZURE_STORAGE_CONNECTION_STRING
+        )
+        self.container_name = settings.AZURE_STORAGE_CONTAINER_NAME
+        self.container_client = self.blob_service_client.get_container_client(
+            self.container_name
+        )
+
+    async def save(
+        self, file_bytes: bytes, filename: str, content_type: str
+    ) -> dict:
+        blob_client = self.container_client.get_blob_client(filename)
+        blob_client.upload_blob(file_bytes, overwrite=True, content_settings={"content_type": content_type})
+        logger.info(f"Uploaded report to Azure Blob: {blob_client.url}")
+
+        return {
+            "file_path": blob_client.url,
+            "content_base64": None,
+            "download_url": blob_client.url,
+        }
+
+
 def get_storage() -> StorageBackend:
     """Factory: return the configured storage backend."""
+    if settings.STORAGE_TYPE == "azure_blob":
+        return AzureBlobStorage()
     if settings.USE_S3_STORAGE or settings.STORAGE_TYPE == "s3":
         return S3Storage()
     return LocalStorage()

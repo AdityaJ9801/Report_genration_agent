@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     AZURE_OPENAI_API_VERSION: str = "2024-02-15-preview"
 
     # --- Storage ---
-    STORAGE_TYPE: Literal["local", "s3"] = "local"
+    STORAGE_TYPE: Literal["local", "s3", "azure_blob"] = "local"
     REPORT_OUTPUT_PATH: str = "./reports"
     USE_S3_STORAGE: bool = False
     S3_REPORTS_BUCKET: str = "gemrslize-reports"
@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     AWS_REGION: str = "us-east-1"
     S3_PRESIGNED_EXPIRY: int = 604800  # 7 days in seconds
+    AZURE_STORAGE_CONNECTION_STRING: Optional[str] = None
+    AZURE_STORAGE_CONTAINER_NAME: str = "reports"
 
     # --- Redis ---
     REDIS_URL: str = "redis://redis:6379"
