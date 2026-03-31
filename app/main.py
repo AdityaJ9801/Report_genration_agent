@@ -309,55 +309,54 @@ async def run_task(payload: dict):
     """
     task_description = payload.get("task_description") or payload.get("query") or "Auto-generated Synthesis"
     context = payload.get("_context", {})
-    
+
     context_summary = None
     sql_results = []
     charts = []
     ml_results = None
     nlp_insights = None
-    
-    # Intelligently map outputs from previous steps based on their unique attributes
-    for dep_id, dep_data in context.items():
+
+    for dep_data in context.values():
         if not isinstance(dep_data, dict):
             continue
-            
-        # Context Agent: Usually contains "source_id" and "columns"
-        if "source_id" in dep_data and "columns" in dep_data and "metadata" in dep_data:
+
+        # Context Agent: has source_id + columns + metadata
+        if context_summary is None and "source_id" in dep_data and "columns" in dep_data:
             context_summary = dep_data
-            
-        # SQL Agent: Contains "sql_generated"
-        elif "sql_generated" in dep_data and "data_preview" in dep_data:
+
+        # SQL Agent: has sql_generated or data_preview with row data
+        elif "sql_generated" in dep_data or (
+            "data_preview" in dep_data and "row_count" not in dep_data
+        ):
             sql_results.append(dep_data)
-            
-        # Viz Agent: Contains "chart_type"
-        elif "chart_type" in dep_data and ("spec" in dep_data or "html" in dep_data or "png_base64" in dep_data):
+
+        # Viz Agent: has chart_type
+        elif "chart_type" in dep_data:
             charts.append(dep_data)
-            
-        # ML Agent: Contains metrics or model_type
-        elif "model_type" in dep_data and ("metrics" in dep_data or "predictions" in dep_data):
+
+        # ML Agent: has model_type
+        elif "model_type" in dep_data:
             ml_results = dep_data
-            
-        # NLP Agent: Contains sentiment or entities
-        elif "sentiment" in dep_data or "entities" in dep_data:
+
+        # NLP Agent: has sentiment, entities, topics, or nlp_type
+        elif any(k in dep_data for k in ("sentiment", "entities", "topics", "nlp_type", "distribution")):
             nlp_insights = dep_data
-            
+
     bundle = AgentOutputBundle(
         context_summary=context_summary,
         sql_results=sql_results if sql_results else None,
         charts=charts if charts else None,
         ml_results=ml_results,
         nlp_insights=nlp_insights,
-        user_query=task_description
+        user_query=task_description,
     )
-    
+
     req = ReportRequest(
         bundle=bundle,
         report_style="executive",
         export_format="json",
-        include_charts=True
+        include_charts=True,
     )
-    
-    # Delegate to the standard report generator
+
     result = await generate_report(req)
-    # The JSON exporter returns a strongly typed model, convert it for the Orchestrator
     return result.model_dump()
