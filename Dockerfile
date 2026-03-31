@@ -1,7 +1,8 @@
 FROM python:3.11-slim
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --fix-missing && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     gcc \
     pango1.0-tools \
     libpango-1.0-0 \
@@ -11,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     shared-mime-info \
     curl \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
